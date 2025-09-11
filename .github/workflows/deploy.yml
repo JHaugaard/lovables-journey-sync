@@ -66,7 +66,7 @@ jobs:
           method: download
         continue-on-error: true
 
-      # Step 8: Deploy via FTP
+      # Step 8: Deploy via FTP (with clean slate)
       - name: Deploy to Hostinger
         id: deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -76,6 +76,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ${{ env.BUILD_PATH }}/
           server-dir: ${{ env.DEPLOY_PATH }}
+          dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/.git*/**
