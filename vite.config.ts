@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/", // Root domain deployment
+  base: process.env.VITE_BASE_PATH || "/roundtrip/", // Dynamic base path
   server: {
     host: "::",
     port: 8080,
