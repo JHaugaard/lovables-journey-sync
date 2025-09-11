@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
   const location = useLocation();
@@ -13,8 +15,21 @@ const Navigation = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Handle keyboard navigation
+  const handleKeyDown = (event: React.KeyboardEvent, callback: () => void) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      callback();
+    }
+  };
+
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
@@ -22,6 +37,7 @@ const Navigation = () => {
             <Link 
               to="/" 
               className="text-xl font-bold text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
+              aria-label="Roundtrip Adventure - Home"
             >
               Roundtrip Adventure
             </Link>
@@ -29,11 +45,12 @@ const Navigation = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="ml-10 flex items-baseline space-x-4" role="menubar">
               <Link
                 to="/"
                 className={`nav-link ${isActive("/") ? "nav-link-active" : ""}`}
                 aria-current={isActive("/") ? "page" : undefined}
+                role="menuitem"
               >
                 Home
               </Link>
@@ -41,6 +58,7 @@ const Navigation = () => {
                 to="/about"
                 className={`nav-link ${isActive("/about") ? "nav-link-active" : ""}`}
                 aria-current={isActive("/about") ? "page" : undefined}
+                role="menuitem"
               >
                 About
               </Link>
@@ -49,44 +67,39 @@ const Navigation = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={toggleMobileMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              onKeyDown={(e) => handleKeyDown(e, toggleMobileMenu)}
               aria-expanded={isMobileMenuOpen}
-              aria-label="Main menu"
+              aria-controls="mobile-menu"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              className="text-muted-foreground hover:text-foreground hover:bg-accent focus:ring-2 focus:ring-ring"
             >
-              <svg
-                className={`${isMobileMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <svg
-                className={`${isMobileMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" aria-hidden="true" />
+              ) : (
+                <Menu className="h-6 w-6" aria-hidden="true" />
+              )}
+            </Button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
-        <div className={`md:hidden transition-all duration-200 ease-in-out ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div 
+          id="mobile-menu"
+          className={`md:hidden transition-all duration-200 ease-in-out ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+          role="menu"
+          aria-label="Mobile navigation menu"
+        >
           <div className="px-2 pt-2 pb-3 space-y-1 border-t border-border mt-2">
             <Link
               to="/"
               className={`block nav-link ${isActive("/") ? "nav-link-active" : ""}`}
               aria-current={isActive("/") ? "page" : undefined}
               onClick={() => setIsMobileMenuOpen(false)}
+              role="menuitem"
             >
               Home
             </Link>
@@ -95,6 +108,7 @@ const Navigation = () => {
               className={`block nav-link ${isActive("/about") ? "nav-link-active" : ""}`}
               aria-current={isActive("/about") ? "page" : undefined}
               onClick={() => setIsMobileMenuOpen(false)}
+              role="menuitem"
             >
               About
             </Link>
