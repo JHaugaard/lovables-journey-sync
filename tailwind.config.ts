@@ -57,6 +57,27 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Travel-themed colors
+        travel: {
+          blue: "hsl(var(--travel-blue))",
+          "blue-dark": "hsl(var(--travel-blue-dark))",
+          indigo: "hsl(var(--travel-indigo))",
+          ocean: "hsl(var(--ocean-blue))",
+          sky: "hsl(var(--sky-blue))",
+        },
+      },
+      fontSize: {
+        xs: 'var(--text-xs)',
+        sm: 'var(--text-sm)',
+        base: 'var(--text-base)',
+        lg: 'var(--text-lg)',
+        xl: 'var(--text-xl)',
+        '2xl': 'var(--text-2xl)',
+        '3xl': 'var(--text-3xl)',
+        '4xl': 'var(--text-4xl)',
+      },
+      backdropBlur: {
+        xs: '2px',
       },
       borderRadius: {
         lg: "var(--radius)",
