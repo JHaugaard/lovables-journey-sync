@@ -10,7 +10,7 @@ on:
 env:
   NODE_VERSION: '18'
   BUILD_PATH: './dist'
-  DEPLOY_PATH: '/public_html/'
+  DEPLOY_PATH: '/public_html/roundtrip/'
   VITE_BASE_PATH: '/'
 
 # Jobs to run
@@ -34,7 +34,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Step 4: Build the application
+      # Step 4: Stamp version.txt for cache-busting
+      - name: Stamp version.txt
+        run: |
+          BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          sed -i "s|{{BUILD_TIME}}|$BUILD_TIME|g" public/version.txt
+          sed -i "s|{{TIMESTAMP}}|$TIMESTAMP|g" public/version.txt
+          sed -i "s|^Base Path: .*|Base Path: ${{ env.VITE_BASE_PATH }}|g" public/version.txt
+
+      # Step 5: Build the application
       - name: Build application
         run: npm run build
 
@@ -51,9 +60,11 @@ jobs:
       # Step 6: Create backup before deployment
       - name: Create backup directory
         run: |
+          mkdir -p ./backup-current
           BACKUP_DIR="backup-$(date +%Y%m%d-%H%M%S)"
           echo "BACKUP_DIR=$BACKUP_DIR" >> $GITHUB_ENV
           echo "Creating backup directory: $BACKUP_DIR"
+
 
       # Step 7: Backup current production (continue on error)
       - name: Backup current production
