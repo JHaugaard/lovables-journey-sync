@@ -10,7 +10,8 @@ on:
 env:
   NODE_VERSION: '18'
   BUILD_PATH: './dist'
-  DEPLOY_PATH: '/public_html/roundtrip/'
+  DEPLOY_PATH: '/public_html/'
+  VITE_BASE_PATH: '/'
 
 # Jobs to run
 jobs:
