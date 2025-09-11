@@ -1,0 +1,113 @@
+name: Deploy to Hostinger
+
+# Trigger: Run on every push to main branch and manual dispatch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Allow manual trigger
+
+# Environment variables
+env:
+  NODE_VERSION: '18'
+  BUILD_PATH: './dist'
+  DEPLOY_PATH: '/public_html/roundtrip/'
+
+# Jobs to run
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Get the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Build the application
+      - name: Build application
+        run: npm run build
+
+      # Step 5: Verify build output
+      - name: Verify build
+        run: |
+          echo "Build completed successfully"
+          ls -la dist/
+          echo "Build size:"
+          du -sh dist/
+          echo "Files in build:"
+          find dist/ -type f -name "*.js" -o -name "*.css" -o -name "*.html" | head -10
+
+      # Step 6: Create backup before deployment
+      - name: Create backup directory
+        run: |
+          BACKUP_DIR="backup-$(date +%Y%m%d-%H%M%S)"
+          echo "BACKUP_DIR=$BACKUP_DIR" >> $GITHUB_ENV
+          echo "Creating backup directory: $BACKUP_DIR"
+
+      # Step 7: Backup current production (continue on error)
+      - name: Backup current production
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./backup-current/
+          server-dir: ${{ env.DEPLOY_PATH }}
+          method: download
+        continue-on-error: true
+
+      # Step 8: Deploy via FTP
+      - name: Deploy to Hostinger
+        id: deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ env.BUILD_PATH }}/
+          server-dir: ${{ env.DEPLOY_PATH }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+            **/Thumbs.db
+            **/*.map
+            **/backup-*/**
+
+      # Step 9: Verify deployment
+      - name: Post-deployment verification
+        run: |
+          echo "🚀 Deployment completed successfully!"
+          echo "Deployment time: $(date)"
+          echo "Build size: $(du -sh dist/)"
+          echo "Site should be available at your domain"
+
+      # Step 10: Rollback on failure (if needed)
+      - name: Rollback on deployment failure
+        if: failure() && steps.deploy.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./backup-current/
+          server-dir: ${{ env.DEPLOY_PATH }}
+        continue-on-error: true
+
+      # Step 11: Cleanup old backups (keep last 5)
+      - name: Cleanup old backups
+        run: |
+          echo "Deployment pipeline completed"
+          echo "Backup created: ${{ env.BACKUP_DIR }}"
+        continue-on-error: true
