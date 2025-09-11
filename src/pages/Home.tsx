@@ -117,7 +117,7 @@ const Home = () => {
                       className="w-full group-hover:bg-primary group-hover:text-primary-foreground smooth-transition"
                       aria-label={`Learn more about ${adventure.title}`}
                     >
-                      Explore Journey
+                      Explore The Journey
                     </Button>
                   </CardContent>
                 </Card>
