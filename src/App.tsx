@@ -31,7 +31,7 @@ const App = () => {
             <SkipToContent />
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
               <Navigation />
               <FocusManager />
               <main id="main-content" tabIndex={-1} className="focus:outline-none">

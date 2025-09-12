@@ -34,14 +34,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (stored) {
         try {
           const userData = JSON.parse(stored);
+          // Build base-aware probe URL
+          const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+          const probeUrl = `${base}/auth-probe.txt`;
+          
           // Verify the stored auth by testing against the auth probe
-          const response = await fetch(`${window.location.origin}/auth-probe.txt`, {
+          let response = await fetch(probeUrl, {
             method: 'HEAD',
             headers: {
               'Authorization': `Basic ${btoa(`${userData.username}:${userData.password}`)}`
             },
             cache: 'no-store'
           });
+          
+          // Fallback to GET if HEAD fails
+          if (!response.ok) {
+            response = await fetch(probeUrl, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Basic ${btoa(`${userData.username}:${userData.password}`)}`
+              },
+              cache: 'no-store'
+            });
+          }
           
           if (response.ok) {
             setUser({ username: userData.username });
@@ -61,9 +76,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
+      // Build base-aware probe URL
+      const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+      const probeUrl = `${base}/auth-probe.txt`;
+      
       console.log('🔐 Attempting login with probe test...');
+      console.log('🎯 Probe URL:', probeUrl);
+      
       // Test the credentials against the auth probe file
-      const response = await fetch(`${window.location.origin}/auth-probe.txt`, {
+      let response = await fetch(probeUrl, {
         method: 'HEAD',
         headers: {
           'Authorization': `Basic ${btoa(`${username}:${password}`)}`
@@ -71,12 +92,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         cache: 'no-store'
       });
 
-      console.log('📡 Probe response:', {
+      console.log('📡 HEAD response:', {
+        url: probeUrl,
         status: response.status,
         statusText: response.statusText,
-        ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
+        ok: response.ok
       });
+
+      // Fallback to GET if HEAD fails
+      if (!response.ok) {
+        console.log('🔄 Retrying with GET method...');
+        response = await fetch(probeUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Basic ${btoa(`${username}:${password}`)}`
+          },
+          cache: 'no-store'
+        });
+        
+        console.log('📡 GET response:', {
+          url: probeUrl,
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok
+        });
+      }
 
       if (response.ok) {
         console.log('✅ Authentication successful');
