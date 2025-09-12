@@ -58,7 +58,7 @@ const Home = () => {
                 onClick={handleCTAClick}
               >
                 <Link to="/about" aria-describedby="cta-description">
-                  Start The Journey Today
+                  Start The Journey Today!
                 </Link>
               </Button>
               <p id="cta-description" className="sr-only">
