@@ -2,7 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AuthStatus } from "@/components/auth/AuthStatus";
 
 const Navigation = () => {
   const location = useLocation();
@@ -45,8 +44,8 @@ const Navigation = () => {
           </div>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-baseline space-x-4" role="menubar">
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4" role="menubar">
               <Link
                 to="/"
                 className={`nav-link ${isActive("/") ? "nav-link-active" : ""}`}
@@ -63,16 +62,7 @@ const Navigation = () => {
               >
                 About
               </Link>
-              <Link
-                to="/admin"
-                className={`nav-link ${isActive("/admin") ? "nav-link-active" : ""}`}
-                aria-current={isActive("/admin") ? "page" : undefined}
-                role="menuitem"
-              >
-                Admin
-              </Link>
             </div>
-            <AuthStatus />
           </div>
 
           {/* Mobile menu button */}
@@ -121,15 +111,6 @@ const Navigation = () => {
               role="menuitem"
             >
               About
-            </Link>
-            <Link
-              to="/admin"
-              className={`block nav-link ${isActive("/admin") ? "nav-link-active" : ""}`}
-              aria-current={isActive("/admin") ? "page" : undefined}
-              onClick={() => setIsMobileMenuOpen(false)}
-              role="menuitem"
-            >
-              Admin
             </Link>
           </div>
         </div>

@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
-import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Navigation from "./components/Navigation";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -14,8 +13,6 @@ import { StructuredData } from "./components/StructuredData";
 import { Analytics } from "./components/Analytics";
 import { usePerformance } from "./hooks/usePerformance";
 import { FocusManager } from "./components/FocusManager";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -27,30 +24,23 @@ const App = () => {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <AuthProvider>
-            <SkipToContent />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter basename={import.meta.env.BASE_URL}>
-              <Navigation />
-              <FocusManager />
-              <main id="main-content" tabIndex={-1} className="focus:outline-none">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/admin" element={
-                    <ProtectedRoute>
-                      <Admin />
-                    </ProtectedRoute>
-                  } />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Analytics enabled={false} /> {/* Set to true when you have a tracking ID */}
-            </BrowserRouter>
-            <StructuredData />
-          </AuthProvider>
+          <SkipToContent />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Navigation />
+            <FocusManager />
+            <main id="main-content" tabIndex={-1} className="focus:outline-none">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Analytics enabled={false} /> {/* Set to true when you have a tracking ID */}
+          </BrowserRouter>
+          <StructuredData />
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

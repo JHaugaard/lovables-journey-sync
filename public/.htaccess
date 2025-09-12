@@ -1,16 +1,8 @@
-# HTTP Basic Authentication (ONLY for auth-probe.txt)
-<Files "auth-probe.txt">
-    AuthType Basic
-    AuthName "Authentication Probe"
-    AuthUserFile /home/u190197056/domains/haugaard.dev/.htpasswd
-    Require valid-user
-</Files>
-
-# POST-DEPLOY CHECKLIST:
-# 1. Create /domains/haugaard.dev/.htpasswd with your credentials
-# 2. Set file permissions: chmod 600 /domains/haugaard.dev/.htpasswd
-# 3. Test: curl -I https://haugaard.dev/auth-probe.txt (should return 401)
-# 4. Test with auth: curl -I -u username:password https://haugaard.dev/auth-probe.txt (should return 200)
+# HTTP Basic Authentication (uncomment to enable)
+# AuthType Basic
+# AuthName "Roundtrip Adventure - Protected Area"
+# AuthUserFile /path/to/.htpasswd
+# Require valid-user
 
 # Enable mod_rewrite for SPA routing
 RewriteEngine On
