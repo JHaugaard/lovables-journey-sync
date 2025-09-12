@@ -34,11 +34,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (stored) {
         try {
           const userData = JSON.parse(stored);
-          // Verify the stored auth by making a test request
-          const response = await fetch(window.location.origin, {
+          // Verify the stored auth by testing against the auth probe
+          const response = await fetch(`${window.location.origin}/auth-probe.txt`, {
+            method: 'HEAD',
             headers: {
               'Authorization': `Basic ${btoa(`${userData.username}:${userData.password}`)}`
-            }
+            },
+            cache: 'no-store'
           });
           
           if (response.ok) {
@@ -59,11 +61,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      // Test the credentials with HTTP Basic Auth
-      const response = await fetch(window.location.origin, {
+      // Test the credentials against the auth probe file
+      const response = await fetch(`${window.location.origin}/auth-probe.txt`, {
+        method: 'HEAD',
         headers: {
           'Authorization': `Basic ${btoa(`${username}:${password}`)}`
-        }
+        },
+        cache: 'no-store'
       });
 
       if (response.ok) {

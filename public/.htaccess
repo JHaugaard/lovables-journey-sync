@@ -1,7 +1,7 @@
 # HTTP Basic Authentication (enabled for admin access)
 AuthType Basic
 AuthName "Roundtrip Adventure - Protected Area"
-AuthUserFile /home/website_user/.htpasswd
+AuthUserFile /domains/haugaard.dev/.htpasswd
 Require valid-user
 
 # Enable mod_rewrite for SPA routing
