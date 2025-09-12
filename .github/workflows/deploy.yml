@@ -10,7 +10,7 @@ on:
 env:
   NODE_VERSION: '18'
   BUILD_PATH: './dist'
-  DEPLOY_PATH: '/public_html/roundtrip/'
+  DEPLOY_PATH: '/haugaard.dev/public_html/roundtrip/'
   VITE_BASE_PATH: '/'
 
 # Jobs to run
@@ -47,6 +47,12 @@ jobs:
       - name: Build application
         run: npm run build
 
+      # Step 5.5: Add deployment markers
+      - name: Add deployment markers
+        run: |
+          echo "Primary Path: /haugaard.dev/public_html/roundtrip/" > dist/whereami.txt
+          echo "Deploy Time: $(date)" >> dist/whereami.txt
+
       # Step 5: Verify build output
       - name: Verify build
         run: |
@@ -78,9 +84,37 @@ jobs:
           method: download
         continue-on-error: true
 
-      # Step 8: Deploy to primary path
-      - name: Deploy to /public_html/roundtrip/
+      # Step 8: Deploy to primary path (correct Hostinger structure)
+      - name: Deploy to /haugaard.dev/public_html/roundtrip/
         id: deploy_primary
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ env.BUILD_PATH }}/
+          server-dir: /haugaard.dev/public_html/roundtrip/
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+            **/Thumbs.db
+            **/*.map
+            **/backup-*/**
+        continue-on-error: true
+
+      # Step 9: Update marker for fallback path and deploy
+      - name: Update marker and deploy to /public_html/roundtrip/
+        id: deploy_alt
+        if: failure() && steps.deploy_primary.outcome == 'failure'
+        run: |
+          echo "Fallback Path: /public_html/roundtrip/" > dist/whereami.txt
+          echo "Deploy Time: $(date)" >> dist/whereami.txt
+        
+      - name: Deploy to fallback path
+        if: failure() && steps.deploy_primary.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -97,34 +131,16 @@ jobs:
             **/Thumbs.db
             **/*.map
             **/backup-*/**
-        continue-on-error: true
 
-      # Step 9: Deploy to alternative path (if primary fails)
-      - name: Deploy to /domains/roundtrip.haugaard.dev/public_html/
-        id: deploy_alt
-        if: failure() && steps.deploy_primary.outcome == 'failure'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ${{ env.BUILD_PATH }}/
-          server-dir: /domains/roundtrip.haugaard.dev/public_html/
-          dangerous-clean-slate: true
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.DS_Store
-            **/Thumbs.db
-            **/*.map
-            **/backup-*/**
-
-      # Step 10: HTTP verification
+      # Step 10: HTTP verification with path detection
       - name: Verify deployment via HTTP
         run: |
           echo "🔍 Verifying deployment..."
-          sleep 10  # Give server time to update
+          sleep 15  # Give server time to update
+          
+          # Check whereami.txt to verify active deployment path
+          echo "Checking deployment path marker..."
+          curl -s "https://roundtrip.haugaard.dev/whereami.txt?cache_bust=$(date +%s)" || echo "Failed to fetch whereami.txt"
           
           # Check version.txt for updates
           echo "Checking version.txt..."
