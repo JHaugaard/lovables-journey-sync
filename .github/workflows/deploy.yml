@@ -10,7 +10,7 @@ on:
 env:
   NODE_VERSION: '18'
   BUILD_PATH: './dist'
-  DEPLOY_PATH: '/haugaard.dev/public_html/roundtrip/'
+  DEPLOY_PATH: '/domains/haugaard.dev/public_html/roundtrip/'
   VITE_BASE_PATH: '/'
 
 # Jobs to run
@@ -50,7 +50,7 @@ jobs:
       # Step 5.5: Add deployment markers
       - name: Add deployment markers
         run: |
-          echo "Primary Path: /haugaard.dev/public_html/roundtrip/" > dist/whereami.txt
+          echo "Primary Path: /domains/haugaard.dev/public_html/roundtrip/" > dist/whereami.txt
           echo "Deploy Time: $(date)" >> dist/whereami.txt
 
       # Step 5: Verify build output
@@ -85,8 +85,37 @@ jobs:
         continue-on-error: true
 
       # Step 8: Deploy to primary path (correct Hostinger structure)
-      - name: Deploy to /haugaard.dev/public_html/roundtrip/
+      - name: Deploy to /domains/haugaard.dev/public_html/roundtrip/
         id: deploy_primary
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ env.BUILD_PATH }}/
+          server-dir: /domains/haugaard.dev/public_html/roundtrip/
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+            **/Thumbs.db
+            **/*.map
+            **/backup-*/**
+        continue-on-error: true
+
+      # Step 9: Update marker for fallback path and deploy
+      - name: Update marker for fallback 1 (/haugaard.dev/public_html/roundtrip/)
+        id: set_fallback1_marker
+        if: failure() && steps.deploy_primary.outcome == 'failure'
+        run: |
+          echo "Fallback Path: /haugaard.dev/public_html/roundtrip/" > dist/whereami.txt
+          echo "Deploy Time: $(date)" >> dist/whereami.txt
+
+      - name: Deploy to fallback 1 (/haugaard.dev/public_html/roundtrip/)
+        id: deploy_fallback1
+        if: failure() && steps.deploy_primary.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -103,18 +132,17 @@ jobs:
             **/Thumbs.db
             **/*.map
             **/backup-*/**
-        continue-on-error: true
 
-      # Step 9: Update marker for fallback path and deploy
-      - name: Update marker and deploy to /public_html/roundtrip/
-        id: deploy_alt
-        if: failure() && steps.deploy_primary.outcome == 'failure'
+      - name: Update marker for fallback 2 (/public_html/roundtrip/)
+        id: set_fallback2_marker
+        if: failure() && steps.deploy_fallback1.outcome == 'failure'
         run: |
           echo "Fallback Path: /public_html/roundtrip/" > dist/whereami.txt
           echo "Deploy Time: $(date)" >> dist/whereami.txt
         
-      - name: Deploy to fallback path
-        if: failure() && steps.deploy_primary.outcome == 'failure'
+      - name: Deploy to fallback 2 (/public_html/roundtrip/)
+        id: deploy_fallback2
+        if: failure() && steps.deploy_fallback1.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -163,7 +191,7 @@ jobs:
 
       # Step 10: Rollback on failure (if needed)
       - name: Rollback on deployment failure
-        if: failure() && steps.deploy.outcome == 'failure'
+        if: failure() && steps.deploy_primary.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
