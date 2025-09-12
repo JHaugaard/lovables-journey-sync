@@ -48,11 +48,11 @@ Update the `DEPLOY_PATH` in `.github/workflows/deploy.yml` if needed:
 
 ```yaml
 env:
-  DEPLOY_PATH: '/public_html/roundtrip/'  # Adjust for your hosting
+  DEPLOY_PATH: '/domains/haugaard.dev/public_html/roundtrip/'  # Confirmed working path
 ```
 
 Common paths:
-- **Hostinger**: `/public_html/`
+- **Hostinger**: `/domains/yourdomain.com/public_html/` or `/public_html/`
 - **cPanel**: `/public_html/`
 - **Subdomain**: `/public_html/subdomain/`
 - **Subfolder**: `/public_html/folder/`
@@ -65,11 +65,13 @@ Common paths:
 2. **Navigate to File Manager**
 3. **Create directory structure**:
    ```
-   public_html/
-   └── roundtrip/          # Your app folder
-       ├── index.html
-       ├── assets/
-       └── .htaccess
+   domains/
+   └── yourdomain.com/
+       └── public_html/
+           └── roundtrip/          # Your app folder
+               ├── index.html
+               ├── assets/
+               └── .htaccess
    ```
 
 ### cPanel Setup
