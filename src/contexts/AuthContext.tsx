@@ -61,6 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
+      console.log('🔐 Attempting login with probe test...');
       // Test the credentials against the auth probe file
       const response = await fetch(`${window.location.origin}/auth-probe.txt`, {
         method: 'HEAD',
@@ -70,16 +71,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         cache: 'no-store'
       });
 
+      console.log('📡 Probe response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
       if (response.ok) {
+        console.log('✅ Authentication successful');
         const userData = { username, password };
         localStorage.setItem('auth_user', JSON.stringify(userData));
         setUser({ username });
         setIsAuthenticated(true);
         return true;
       }
+      console.log('❌ Authentication failed - invalid credentials');
       return false;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('🚨 Login error:', error);
       return false;
     }
   };
