@@ -78,16 +78,38 @@ jobs:
           method: download
         continue-on-error: true
 
-      # Step 8: Deploy via FTP (with clean slate)
-      - name: Deploy to Hostinger
-        id: deploy
+      # Step 8: Deploy to primary path
+      - name: Deploy to /public_html/roundtrip/
+        id: deploy_primary
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ${{ env.BUILD_PATH }}/
-          server-dir: ${{ env.DEPLOY_PATH }}
+          server-dir: /public_html/roundtrip/
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+            **/Thumbs.db
+            **/*.map
+            **/backup-*/**
+        continue-on-error: true
+
+      # Step 9: Deploy to alternative path (if primary fails)
+      - name: Deploy to /domains/roundtrip.haugaard.dev/public_html/
+        id: deploy_alt
+        if: failure() && steps.deploy_primary.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ env.BUILD_PATH }}/
+          server-dir: /domains/roundtrip.haugaard.dev/public_html/
           dangerous-clean-slate: true
           exclude: |
             **/.git*
@@ -98,13 +120,30 @@ jobs:
             **/*.map
             **/backup-*/**
 
-      # Step 9: Verify deployment
-      - name: Post-deployment verification
+      # Step 10: HTTP verification
+      - name: Verify deployment via HTTP
         run: |
-          echo "🚀 Deployment completed successfully!"
+          echo "🔍 Verifying deployment..."
+          sleep 10  # Give server time to update
+          
+          # Check version.txt for updates
+          echo "Checking version.txt..."
+          curl -s "https://roundtrip.haugaard.dev/version.txt?cache_bust=$(date +%s)" || echo "Failed to fetch version.txt"
+          
+          # Check if homepage loads
+          echo "Checking homepage..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://roundtrip.haugaard.dev/?cache_bust=$(date +%s)")
+          echo "Homepage HTTP Status: $HTTP_STATUS"
+          
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ Site is responding correctly"
+          else
+            echo "⚠️ Site returned HTTP $HTTP_STATUS"
+          fi
+          
+          echo "🚀 Deployment verification completed!"
           echo "Deployment time: $(date)"
           echo "Build size: $(du -sh dist/)"
-          echo "Site should be available at your domain"
 
       # Step 10: Rollback on failure (if needed)
       - name: Rollback on deployment failure
