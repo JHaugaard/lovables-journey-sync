@@ -2,7 +2,7 @@
 <Files "auth-probe.txt">
     AuthType Basic
     AuthName "Authentication Probe"
-    AuthUserFile /domains/haugaard.dev/.htpasswd
+    AuthUserFile /home/u190197056/domains/haugaard.dev/.htpasswd
     Require valid-user
 </Files>
 
