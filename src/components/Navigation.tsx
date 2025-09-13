@@ -29,7 +29,7 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border" role="navigation" aria-label="Main navigation">
+    <nav className="sticky top-0 z-50 bg-background border-b border-border" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
@@ -37,9 +37,9 @@ const Navigation = () => {
             <Link 
               to="/" 
               className="text-xl font-bold text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
-              aria-label="Roundtrip Adventure - Home"
+              aria-label="Web Dev Journey - Home"
             >
-              Roundtrip Adventure
+              DevLearning
             </Link>
           </div>
           
