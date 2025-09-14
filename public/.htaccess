@@ -1,8 +1,8 @@
-# HTTP Basic Authentication (uncomment to enable)
-# AuthType Basic
-# AuthName "Roundtrip Adventure - Protected Area"
-# AuthUserFile /path/to/.htpasswd
-# Require valid-user
+# HTTP Basic Authentication (enabled)
+AuthType Basic
+AuthName "Roundtrip Adventure - Protected Area (jhaugaard)"
+AuthUserFile /home/u190197056/domains/haugaard.dev/public_html/roundtrip/.htpasswd
+Require valid-user
 
 # Enable mod_rewrite for SPA routing
 RewriteEngine On
