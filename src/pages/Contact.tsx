@@ -20,15 +20,29 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      await fetch("https://n8n.srv990934.hstgr.cloud/webhook-test/9cf511d2-95aa-407c-a7ab-d8bab5249b3b", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
       toast({
-        title: "Form Submitted",
-        description: "Note: This is a demo form. To actually send emails, connect to Supabase.",
+        title: "Message Sent",
+        description: "Your message has been sent successfully.",
       });
       setFormData({ name: "", email: "", message: "" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
