@@ -21,7 +21,7 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      await fetch("https://n8n.srv990934.hstgr.cloud/webhook-test/9cf511d2-95aa-407c-a7ab-d8bab5249b3b", {
+      await fetch("https://n8n.srv990934.hstgr.cloud/webhook/9cf511d2-95aa-407c-a7ab-d8bab5249b3b", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
