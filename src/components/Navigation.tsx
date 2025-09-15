@@ -62,6 +62,14 @@ const Navigation = () => {
               >
                 About
               </Link>
+              <Link
+                to="/contact"
+                className={`nav-link ${isActive("/contact") ? "nav-link-active" : ""}`}
+                aria-current={isActive("/contact") ? "page" : undefined}
+                role="menuitem"
+              >
+                Contact
+              </Link>
             </div>
           </div>
 
@@ -111,6 +119,15 @@ const Navigation = () => {
               role="menuitem"
             >
               About
+            </Link>
+            <Link
+              to="/contact"
+              className={`block nav-link ${isActive("/contact") ? "nav-link-active" : ""}`}
+              aria-current={isActive("/contact") ? "page" : undefined}
+              onClick={() => setIsMobileMenuOpen(false)}
+              role="menuitem"
+            >
+              Contact
             </Link>
           </div>
         </div>
